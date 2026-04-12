@@ -17,3 +17,9 @@ fpga/project/
 
 # Common local clutter
 *.log
+
+# Local simulation / compile helper files
+files.txt
+files_iverilog.txt
+build_check.out
+sim_check.out
