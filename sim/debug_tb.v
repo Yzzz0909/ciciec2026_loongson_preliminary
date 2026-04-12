@@ -1,4 +1,4 @@
-﻿`timescale 1ns / 1ps
+`timescale 1ns / 1ps
 `include "config.h"
 
 module debug_tb;
@@ -98,11 +98,13 @@ sram_sp #(
     .ram_data(ext_ram_data)
 );
 
+integer dbg_cnt;
 always @(posedge u_soc_top.cpu_clk) begin
-    if (u_soc_top.cpu_resetn) begin
-        if ((u_soc_top.debug_wb_pc & 32'h3f) == 32'h0) begin
-            $display("%0t pc=%h inst=%h", $time, u_soc_top.debug_wb_pc, u_soc_top.debug_wb_inst);
-        end
+    if (!u_soc_top.cpu_resetn) begin
+        dbg_cnt <= 0;
+    end else if (dbg_cnt < 60) begin
+        $display("%0t pc=%h inst=%h wbwen=%b", $time, u_soc_top.debug_wb_pc, u_soc_top.debug_wb_inst, u_soc_top.debug_wb_rf_wen);
+        dbg_cnt <= dbg_cnt + 1;
     end
 end
 
@@ -116,7 +118,7 @@ always @(posedge clk) begin
 end
 
 initial begin
-    #2000000;
+    #200000;
     $display("timeout pc=%h inst=%h resetn=%b", u_soc_top.debug_wb_pc, u_soc_top.debug_wb_inst, u_soc_top.cpu_resetn);
     $finish;
 end

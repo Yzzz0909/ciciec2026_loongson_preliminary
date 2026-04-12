@@ -23,3 +23,10 @@ files.txt
 files_iverilog.txt
 build_check.out
 sim_check.out
+
+# Extra temporary debug files
+sim/debug_tb.v
+sim_debug.log
+sim_debug.out
+mini.v
+mini.out

@@ -137,6 +137,16 @@ CPU 核目录在 [rtl/ip/open-la500](rtl/ip/open-la500)。
 - 综合顶层：`soc_top`
 - 仿真顶层：`tb_top`
 
+### 4.1.1 Vivado 创建工程
+
+在 Vivado 的 Tcl Console 中执行下面两条命令即可创建工程：
+
+```tcl
+cd C:/Users/naozh/Desktop/Task/3-2/Loogarch/ciciec2026_loongson_preliminary/fpga
+source create_project.tcl
+Run Simulation -> Run Behavioral Simulation
+```
+
 ### 4.2 板级约束
 
 [fpga/constraints/soc.xdc](fpga/constraints/soc.xdc) 包含大量引脚与时序约束，覆盖：
