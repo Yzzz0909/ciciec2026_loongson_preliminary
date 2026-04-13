@@ -1115,6 +1115,8 @@ wire [7:0] cpu_intrpt;
 assign cpu_intrpt = 8'h00;
 
 assign confreg_int = 1'b0;
+assign cpu_bid_4   = 1'b0;
+assign cpu_rid_4   = 1'b0;
 assign cpu_rid    = cpu_rvalid_raw ? cpu_rid_raw   : 4'b0;
 assign cpu_rdata  = cpu_rvalid_raw ? cpu_rdata_raw : 32'b0;
 assign cpu_rresp  = cpu_rvalid_raw ? cpu_rresp_raw : 2'b0;
