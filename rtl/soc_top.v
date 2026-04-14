@@ -219,6 +219,14 @@ wire [3 :0] cpu_sync_bid    ;
 wire [1 :0] cpu_sync_bresp  ;
 wire        cpu_sync_bvalid ;
 wire        cpu_sync_bready ;
+wire [3 :0] cpu_sync_rid_raw;
+wire [31:0] cpu_sync_rdata_raw;
+wire [1 :0] cpu_sync_rresp_raw;
+wire        cpu_sync_rlast_raw;
+wire        cpu_sync_rvalid_raw;
+wire [3 :0] cpu_sync_bid_raw;
+wire [1 :0] cpu_sync_bresp_raw;
+wire        cpu_sync_bvalid_raw;
 
 //axi ram
 wire [4 :0] ram_arid   ;
@@ -708,9 +716,9 @@ AxiCrossbar_2x8  u_AxiCrossbar_2x8 (
     .axiIn_0_wlast           ( cpu_sync_wlast      ),
     //b
     .axiIn_0_bready          ( cpu_sync_bready     ),
-    .axiIn_0_bvalid          ( cpu_sync_bvalid     ),
-    .axiIn_0_bid             ( cpu_sync_bid        ),
-    .axiIn_0_bresp           ( cpu_sync_bresp      ),
+    .axiIn_0_bvalid          ( cpu_sync_bvalid_raw ),
+    .axiIn_0_bid             ( cpu_sync_bid_raw    ),
+    .axiIn_0_bresp           ( cpu_sync_bresp_raw  ),
     //ar
     .axiIn_0_arvalid         ( cpu_sync_arvalid    ),
     .axiIn_0_arready         ( cpu_sync_arready    ),
@@ -723,12 +731,12 @@ AxiCrossbar_2x8  u_AxiCrossbar_2x8 (
     .axiIn_0_arcache         ( cpu_sync_arcache    ),
     .axiIn_0_arprot          ( cpu_sync_arprot     ),
     //r
-    .axiIn_0_rvalid          ( cpu_sync_rvalid     ),
+    .axiIn_0_rvalid          ( cpu_sync_rvalid_raw ),
     .axiIn_0_rready          ( cpu_sync_rready     ),
-    .axiIn_0_rdata           ( cpu_sync_rdata      ),
-    .axiIn_0_rid             ( cpu_sync_rid        ),
-    .axiIn_0_rresp           ( cpu_sync_rresp      ),
-    .axiIn_0_rlast           ( cpu_sync_rlast      ),
+    .axiIn_0_rdata           ( cpu_sync_rdata_raw  ),
+    .axiIn_0_rid             ( cpu_sync_rid_raw    ),
+    .axiIn_0_rresp           ( cpu_sync_rresp_raw  ),
+    .axiIn_0_rlast           ( cpu_sync_rlast_raw  ),
 
     //master 1
     //aw
@@ -1114,9 +1122,19 @@ AxiCrossbar_2x8  u_AxiCrossbar_2x8 (
 wire [7:0] cpu_intrpt;
 assign cpu_intrpt = 8'h00;
 
-assign confreg_int = 1'b0;
-assign cpu_bid_4   = 1'b0;
-assign cpu_rid_4   = 1'b0;
+assign confreg_int   = 1'b0;
+assign cpu_bid_4    = 1'b0;
+assign cpu_rid_4    = 1'b0;
+assign cpu_sync_awid_4 = 1'b0;
+assign cpu_sync_arid_4 = 1'b0;
+assign cpu_sync_rid    = cpu_sync_rvalid_raw ? cpu_sync_rid_raw   : 4'b0;
+assign cpu_sync_rdata  = cpu_sync_rvalid_raw ? cpu_sync_rdata_raw : 32'b0;
+assign cpu_sync_rresp  = cpu_sync_rvalid_raw ? cpu_sync_rresp_raw : 2'b0;
+assign cpu_sync_rlast  = cpu_sync_rvalid_raw ? cpu_sync_rlast_raw : 1'b0;
+assign cpu_sync_rvalid = cpu_sync_rvalid_raw;
+assign cpu_sync_bid    = cpu_sync_bvalid_raw ? cpu_sync_bid_raw   : 4'b0;
+assign cpu_sync_bresp  = cpu_sync_bvalid_raw ? cpu_sync_bresp_raw : 2'b0;
+assign cpu_sync_bvalid = cpu_sync_bvalid_raw;
 assign cpu_rid    = cpu_rvalid_raw ? cpu_rid_raw   : 4'b0;
 assign cpu_rdata  = cpu_rvalid_raw ? cpu_rdata_raw : 32'b0;
 assign cpu_rresp  = cpu_rvalid_raw ? cpu_rresp_raw : 2'b0;
