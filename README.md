@@ -1,4 +1,14 @@
-# ciciec2026_loongson_preliminary
+﻿# ciciec2026_loongson_preliminary
+
+## 0. 文档入口
+
+这份仓库现在已经整理成“一个总入口 README + 几份中文辅助文档”的结构，建议按下面方式使用：
+
+- `README.md`：项目总览、目录说明、常用操作
+- `doc/项目导读.md`：从代码结构角度理解整个工程
+- `doc/开发阶段与当前进度.md`：看任务阶段、当前卡点和下一步重点
+- `doc/Vivado文件列表.txt`：Vivado 工程 / 仿真使用的文件清单
+- `doc/IVerilog文件列表.txt`：Icarus Verilog 使用的文件清单
 
 龙芯杯初赛工程模板，包含 LA32R 处理器核、SoC 顶层、仿真环境、FPGA 工程脚本以及软件 SDK。
 
@@ -292,15 +302,3 @@ Run Simulation -> Run Behavioral Simulation
 8. [sdk/software/examples/int_test/main.c](sdk/software/examples/int_test/main.c)
 9. [fpga/create_project.tcl](fpga/create_project.tcl)
 10. [fpga/constraints/soc.xdc](fpga/constraints/soc.xdc)
-
-## 9. 后续可以继续补充的文档
-
-这份 README 目前更偏“总览”。
-
-如果后面需要，我建议继续补 3 类文档：
-
-- SoC 模块连接图
-- 地址映射与寄存器说明
-- 仿真 / 上板 / 调试操作手册
-
-这样后面看代码、联调软件、补外设时会轻松很多。
