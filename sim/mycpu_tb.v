@@ -72,6 +72,10 @@ wire  ext_ram_we_n;
 wire  [31:0]  base_ram_data;
 wire  [31:0]  ext_ram_data;
 
+localparam integer BTN_START_DELAY = 800000;
+localparam integer BTN_GAP_DELAY   = 100000;
+localparam integer BTN_PULSE_WIDTH = 50;
+
 //产生时钟与复位信号
 initial begin
     clk = 1'b0;
@@ -87,26 +91,27 @@ initial begin
     touch_btn = 4'h0;
     dip_sw    = 32'h0000_abcd;
 
-    #3000000;
+    // 提前按键激励，避免仿真长时间等待到毫秒级才看到按钮中断
+    #BTN_START_DELAY;
 
-    #100000
+    #BTN_GAP_DELAY
     touch_btn = 4'b0001;
-    #50
+    #BTN_PULSE_WIDTH
     touch_btn = 4'b0000;
 
-    #100000
+    #BTN_GAP_DELAY
     touch_btn = 4'b0010;
-    #50
+    #BTN_PULSE_WIDTH
     touch_btn = 4'b0000;
 
-    #100000
+    #BTN_GAP_DELAY
     touch_btn = 4'b0100;
-    #50
+    #BTN_PULSE_WIDTH
     touch_btn = 4'b0000;
 
-    #100000
+    #BTN_GAP_DELAY
     touch_btn = 4'b1000;
-    #50
+    #BTN_PULSE_WIDTH
     touch_btn = 4'b0000;
 
 end

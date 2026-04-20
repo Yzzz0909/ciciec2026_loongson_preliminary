@@ -540,17 +540,6 @@ wire [1 :0] dvi_bresp  ;
 wire        dvi_bvalid ;
 wire        dvi_bready ;
 
-assign dvi_arready  = 1'b1;
-assign dvi_rid      = 5'b0;
-assign dvi_rdata    = 32'b0;
-assign dvi_rresp    = 2'b0;
-assign dvi_rlast    = 1'b0;
-assign dvi_rvalid   = 1'b0;
-assign dvi_awready  = 1'b1;
-assign dvi_wready   = 1'b1;
-assign dvi_bid      = 5'b0;
-assign dvi_bresp    = 2'b0;
-assign dvi_bvalid   = 1'b0;
 
 //axi confreg
 wire [4 :0] confreg_arid   ;
@@ -1122,7 +1111,7 @@ AxiCrossbar_2x8  u_AxiCrossbar_2x8 (
 );
 
 wire [7:0] cpu_intrpt;
-assign cpu_intrpt = 8'h00;
+assign cpu_intrpt = {7'b0, confreg_int};
 
 assign cpu_bid_4    = 1'b0;
 assign cpu_rid_4    = 1'b0;
@@ -1144,13 +1133,6 @@ assign cpu_rvalid = (cpu_rvalid_raw === 1'b1);
 assign cpu_bid    = (cpu_bvalid_raw === 1'b1) ? cpu_bid_raw   : 4'b0;
 assign cpu_bresp  = (cpu_bvalid_raw === 1'b1) ? cpu_bresp_raw : 2'b0;
 assign cpu_bvalid = (cpu_bvalid_raw === 1'b1);
-assign video_red   = 3'b000;
-assign video_green = 3'b000;
-assign video_blue  = 2'b00;
-assign video_hsync = 1'b0;
-assign video_vsync = 1'b0;
-assign video_clk   = 1'b0;
-assign video_de    = 1'b0;
 
 core_top u_cpu (
     .aclk                     ( cpu_clk            ),
@@ -1385,6 +1367,53 @@ confreg #(
     .fft_finish               ( fft_finish         ),
     .confreg_int              ( confreg_int        )
 );
+axi_dvi u_axi_dvi (
+    .s_awvalid                ( dvi_awvalid        ),
+    .s_awready                ( dvi_awready        ),
+    .s_awaddr                 ( dvi_awaddr         ),
+    .s_awid                   ( dvi_awid           ),
+    .s_awlen                  ( dvi_awlen          ),
+    .s_awsize                 ( dvi_awsize         ),
+    .s_awburst                ( dvi_awburst        ),
+    .s_awlock                 ( dvi_awlock[0]      ),
+    .s_awcache                ( dvi_awcache        ),
+    .s_awprot                 ( dvi_awprot         ),
+    .s_wvalid                 ( dvi_wvalid         ),
+    .s_wready                 ( dvi_wready         ),
+    .s_wdata                  ( dvi_wdata          ),
+    .s_wstrb                  ( dvi_wstrb          ),
+    .s_wlast                  ( dvi_wlast          ),
+    .s_bvalid                 ( dvi_bvalid         ),
+    .s_bready                 ( dvi_bready         ),
+    .s_bid                    ( dvi_bid            ),
+    .s_bresp                  ( dvi_bresp          ),
+    .s_arvalid                ( dvi_arvalid        ),
+    .s_arready                ( dvi_arready        ),
+    .s_araddr                 ( dvi_araddr         ),
+    .s_arid                   ( dvi_arid           ),
+    .s_arlen                  ( dvi_arlen          ),
+    .s_arsize                 ( dvi_arsize         ),
+    .s_arburst                ( dvi_arburst        ),
+    .s_arlock                 ( dvi_arlock[0]      ),
+    .s_arcache                ( dvi_arcache        ),
+    .s_arprot                 ( dvi_arprot         ),
+    .s_rvalid                 ( dvi_rvalid         ),
+    .s_rready                 ( dvi_rready         ),
+    .s_rdata                  ( dvi_rdata          ),
+    .s_rid                    ( dvi_rid            ),
+    .s_rresp                  ( dvi_rresp          ),
+    .s_rlast                  ( dvi_rlast          ),
+    .video_clk                ( video_clk          ),
+    .hsync                    ( video_hsync        ),
+    .vsync                    ( video_vsync        ),
+    .data_enable              ( video_de           ),
+    .video_red                ( video_red          ),
+    .video_green              ( video_green        ),
+    .video_blue               ( video_blue         ),
+    .aclk                     ( sys_clk            ),
+    .aresetn                  ( sys_resetn         )
+);
+
 axi_uart_controller u_axi_uart_controller (
     .clk                      ( sys_clk            ),
     .rst_n                    ( sys_resetn         ),
@@ -1451,4 +1480,5 @@ axi_uart_controller u_axi_uart_controller (
 );
 
 endmodule
+
 

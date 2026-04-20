@@ -99,8 +99,13 @@ reg  [31:0] led_data;
 wire [31:0] switch_data;
 reg  [31:0] simu_flag;
 
-reg [31:0] confreg_int_en,confreg_int_edge,confreg_int_pol,confreg_int_clr,confreg_int_set;
+reg  [31:0] confreg_int_en,confreg_int_edge,confreg_int_pol,confreg_int_clr,confreg_int_set;
 wire [31:0] confreg_int_state;
+reg  [31:0] confreg_int_state_r;
+reg  [5:0]  intr_src_d;
+reg  [5:0]  intr_src_q;
+reg  [5:0]  intr_level_d;
+reg  [5:0]  intr_level_q;
 
 reg [31:0] sys_timer,sys_timer_cmp;
 reg sys_timer_en;
@@ -227,11 +232,32 @@ assign touch_btn_data = touch_btn;
     // end
     // endgenerate
 
-
-
-
-
 //--------------------------------{touch_btn}end-----------------------------//
+
+//-------------------------------{int_ctrl_cfg}begin--------------------------//
+wire write_confreg_int_en   = w_enter & (buf_addr[15:0] == (`CONFREG_INT_ADDR + 16'h0));
+wire write_confreg_int_edge = w_enter & (buf_addr[15:0] == (`CONFREG_INT_ADDR + 16'h4));
+wire write_confreg_int_pol  = w_enter & (buf_addr[15:0] == (`CONFREG_INT_ADDR + 16'h8));
+wire write_confreg_int_clr  = w_enter & (buf_addr[15:0] == (`CONFREG_INT_ADDR + 16'hc));
+wire write_confreg_int_set  = w_enter & (buf_addr[15:0] == (`CONFREG_INT_ADDR + 16'h10));
+
+always @(posedge aclk) begin
+    if(!aresetn) begin
+        confreg_int_en   <= 32'h0;
+        confreg_int_edge <= 32'h0;
+        confreg_int_pol  <= 32'h0;
+        confreg_int_clr  <= 32'h0;
+        confreg_int_set  <= 32'h0;
+    end
+    else begin
+        if(write_confreg_int_en)   confreg_int_en   <= s_wdata;
+        if(write_confreg_int_edge) confreg_int_edge <= s_wdata;
+        if(write_confreg_int_pol)  confreg_int_pol  <= s_wdata;
+        confreg_int_clr <= write_confreg_int_clr ? s_wdata : 32'h0;
+        confreg_int_set <= write_confreg_int_set ? s_wdata : 32'h0;
+    end
+end
+//-------------------------------{int_ctrl_cfg}end----------------------------//
 
 //-------------------------------{timer}begin----------------------------//
 
@@ -350,8 +376,61 @@ end
 //---------------------------{simulation flag}end------------------------//
 
 //-------------------------------{int_ctrl}begin----------------------------//
-//add your code
+always @(*) begin
+    intr_level_d[0] = confreg_int_pol[0] ? touch_btn_data[0] : ~touch_btn_data[0];
+    intr_level_d[1] = confreg_int_pol[1] ? touch_btn_data[1] : ~touch_btn_data[1];
+    intr_level_d[2] = confreg_int_pol[2] ? touch_btn_data[2] : ~touch_btn_data[2];
+    intr_level_d[3] = confreg_int_pol[3] ? touch_btn_data[3] : ~touch_btn_data[3];
+    intr_level_d[4] = confreg_int_pol[4] ? timer_int         : ~timer_int;
+    intr_level_d[5] = confreg_int_pol[5] ? dma_finish        : ~dma_finish;
+end
 
+always @(*) begin
+    intr_src_d[0] = confreg_int_pol[0] ? ( touch_btn_data[0] & ~intr_level_q[0]) : (~touch_btn_data[0] &  intr_level_q[0]);
+    intr_src_d[1] = confreg_int_pol[1] ? ( touch_btn_data[1] & ~intr_level_q[1]) : (~touch_btn_data[1] &  intr_level_q[1]);
+    intr_src_d[2] = confreg_int_pol[2] ? ( touch_btn_data[2] & ~intr_level_q[2]) : (~touch_btn_data[2] &  intr_level_q[2]);
+    intr_src_d[3] = confreg_int_pol[3] ? ( touch_btn_data[3] & ~intr_level_q[3]) : (~touch_btn_data[3] &  intr_level_q[3]);
+    intr_src_d[4] = confreg_int_pol[4] ? ( timer_int         & ~intr_level_q[4]) : (~timer_int         &  intr_level_q[4]);
+    intr_src_d[5] = confreg_int_pol[5] ? ( dma_finish        & ~intr_level_q[5]) : (~dma_finish        &  intr_level_q[5]);
+end
+
+always @(posedge aclk) begin
+    if(!aresetn) begin
+        intr_level_q <= 6'h0;
+        intr_src_q   <= 6'h0;
+    end
+    else begin
+        intr_level_q <= intr_level_d;
+        intr_src_q   <= intr_src_d;
+    end
+end
+
+always @(posedge aclk) begin
+    if(!aresetn) begin
+        confreg_int_state_r <= 32'h0;
+    end
+    else begin
+        confreg_int_state_r[5:0] <= confreg_int_state_r[5:0] & ~confreg_int_clr[5:0];
+        confreg_int_state_r[5:0] <= confreg_int_state_r[5:0] | confreg_int_set[5:0];
+
+        if(confreg_int_edge[0]) confreg_int_state_r[0] <= (confreg_int_state_r[0] & ~confreg_int_clr[0]) | confreg_int_set[0] | intr_src_q[0];
+        else                    confreg_int_state_r[0] <= intr_level_d[0];
+        if(confreg_int_edge[1]) confreg_int_state_r[1] <= (confreg_int_state_r[1] & ~confreg_int_clr[1]) | confreg_int_set[1] | intr_src_q[1];
+        else                    confreg_int_state_r[1] <= intr_level_d[1];
+        if(confreg_int_edge[2]) confreg_int_state_r[2] <= (confreg_int_state_r[2] & ~confreg_int_clr[2]) | confreg_int_set[2] | intr_src_q[2];
+        else                    confreg_int_state_r[2] <= intr_level_d[2];
+        if(confreg_int_edge[3]) confreg_int_state_r[3] <= (confreg_int_state_r[3] & ~confreg_int_clr[3]) | confreg_int_set[3] | intr_src_q[3];
+        else                    confreg_int_state_r[3] <= intr_level_d[3];
+        if(confreg_int_edge[4]) confreg_int_state_r[4] <= (confreg_int_state_r[4] & ~confreg_int_clr[4]) | confreg_int_set[4] | intr_src_q[4];
+        else                    confreg_int_state_r[4] <= intr_level_d[4];
+        if(confreg_int_edge[5]) confreg_int_state_r[5] <= (confreg_int_state_r[5] & ~confreg_int_clr[5]) | confreg_int_set[5] | intr_src_q[5];
+        else                    confreg_int_state_r[5] <= intr_level_d[5];
+    end
+end
+
+assign confreg_int_state = confreg_int_state_r;
+assign confreg_int = |(confreg_int_state_r[5:0] & confreg_int_en[5:0]);
 //--------------------------------{int_ctrl}end-----------------------------//
 
 endmodule
+
