@@ -96,6 +96,7 @@ wire [31:0]  btb_pre_error_flush_target;
 
 wire         flush_inst_delay;
 wire         flush_inst_go_dirt;
+wire         pending_frontend_req;
 
 wire         fetch_btb_target;
 
@@ -272,8 +273,14 @@ assign nextpc = (flush_inst_req_state == flush_inst_req_full)                   
 */
 assign tlb_excp_lock_pc = tlb_excp_cancel_req && br_target_inst_req_state != br_target_inst_req_wait_br_target && flush_inst_req_state != flush_inst_req_full;
 
+// Buffered redirect requests still need a fresh fetch handshake, otherwise
+// the pre-IF control can deadlock waiting for pfs_ready_go forever.
+assign pending_frontend_req = (flush_inst_req_state == flush_inst_req_full) ||
+                              (br_target_inst_req_state == br_target_inst_req_wait_br_target);
+
 //when flush_sign meet icache_busy 1, flush_sign's inst valid should not set immediately
-assign inst_valid = (fs_allowin && !pfs_excp && !tlb_excp_lock_pc || flush_sign || btb_pre_error_flush) && !(idle_flush || idle_lock);
+assign inst_valid = ((fs_allowin || pending_frontend_req) && !pfs_excp && !tlb_excp_lock_pc ||
+                     flush_sign || btb_pre_error_flush) && !(idle_flush || idle_lock);
 assign inst_op     = 1'b0;
 assign inst_wstrb  = 4'h0;
 assign inst_addr   = nextpc; //nextpc

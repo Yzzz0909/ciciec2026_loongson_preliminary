@@ -437,6 +437,7 @@ wire [1 :0] dma_s_bresp  ;
 wire        dma_s_bvalid ;
 wire        dma_s_bready ;
 wire        dma_finish   ;
+assign dma_finish = 1'b0;
 
 assign dma_s_arready    = 1'b1;
 assign dma_s_rid        = 5'b0;
@@ -627,6 +628,7 @@ wire [1 :0] fft_bresp  ;
 wire        fft_bvalid ;
 wire        fft_bready ;
 wire        fft_finish ;
+assign fft_finish = 1'b0;
 
 assign fft_arready = 1'b1;
 assign fft_rid    = 5'b0;
@@ -1122,7 +1124,6 @@ AxiCrossbar_2x8  u_AxiCrossbar_2x8 (
 wire [7:0] cpu_intrpt;
 assign cpu_intrpt = 8'h00;
 
-assign confreg_int   = 1'b0;
 assign cpu_bid_4    = 1'b0;
 assign cpu_rid_4    = 1'b0;
 assign cpu_sync_awid_4 = 1'b0;
@@ -1143,9 +1144,6 @@ assign cpu_rvalid = (cpu_rvalid_raw === 1'b1);
 assign cpu_bid    = (cpu_bvalid_raw === 1'b1) ? cpu_bid_raw   : 4'b0;
 assign cpu_bresp  = (cpu_bvalid_raw === 1'b1) ? cpu_bresp_raw : 2'b0;
 assign cpu_bvalid = (cpu_bvalid_raw === 1'b1);
-assign leds  = 16'h0000;
-assign dpy0  = 8'h00;
-assign dpy1  = 8'h00;
 assign video_red   = 3'b000;
 assign video_green = 3'b000;
 assign video_blue  = 2'b00;
@@ -1335,6 +1333,58 @@ axi_wrap_ram_sp_external u_axi_ram (
     .ext_ram_we_n             ( ext_ram_we_n       )
 );
 
+confreg #(
+    .SIMULATION               ( SIMULATION         )
+) u_confreg (
+    .aclk                     ( sys_clk            ),
+    .aresetn                  ( sys_resetn         ),
+    .cpu_clk                  ( cpu_clk            ),
+    .cpu_resetn               ( cpu_resetn         ),
+    .s_awid                   ( confreg_awid       ),
+    .s_awaddr                 ( confreg_awaddr     ),
+    .s_awlen                  ( confreg_awlen      ),
+    .s_awsize                 ( confreg_awsize     ),
+    .s_awburst                ( confreg_awburst    ),
+    .s_awlock                 ( confreg_awlock     ),
+    .s_awcache                ( confreg_awcache    ),
+    .s_awprot                 ( confreg_awprot     ),
+    .s_awvalid                ( confreg_awvalid    ),
+    .s_awready                ( confreg_awready    ),
+    .s_wid                    ( confreg_wid        ),
+    .s_wdata                  ( confreg_wdata      ),
+    .s_wstrb                  ( confreg_wstrb      ),
+    .s_wlast                  ( confreg_wlast      ),
+    .s_wvalid                 ( confreg_wvalid     ),
+    .s_wready                 ( confreg_wready     ),
+    .s_bid                    ( confreg_bid        ),
+    .s_bresp                  ( confreg_bresp      ),
+    .s_bvalid                 ( confreg_bvalid     ),
+    .s_bready                 ( confreg_bready     ),
+    .s_arid                   ( confreg_arid       ),
+    .s_araddr                 ( confreg_araddr     ),
+    .s_arlen                  ( confreg_arlen      ),
+    .s_arsize                 ( confreg_arsize     ),
+    .s_arburst                ( confreg_arburst    ),
+    .s_arlock                 ( confreg_arlock     ),
+    .s_arcache                ( confreg_arcache    ),
+    .s_arprot                 ( confreg_arprot     ),
+    .s_arvalid                ( confreg_arvalid    ),
+    .s_arready                ( confreg_arready    ),
+    .s_rid                    ( confreg_rid        ),
+    .s_rdata                  ( confreg_rdata      ),
+    .s_rresp                  ( confreg_rresp      ),
+    .s_rlast                  ( confreg_rlast      ),
+    .s_rvalid                 ( confreg_rvalid     ),
+    .s_rready                 ( confreg_rready     ),
+    .led                      ( leds               ),
+    .dpy0                     ( dpy0               ),
+    .dpy1                     ( dpy1               ),
+    .switch                   ( dip_sw             ),
+    .touch_btn                ( touch_btn          ),
+    .dma_finish               ( dma_finish         ),
+    .fft_finish               ( fft_finish         ),
+    .confreg_int              ( confreg_int        )
+);
 axi_uart_controller u_axi_uart_controller (
     .clk                      ( sys_clk            ),
     .rst_n                    ( sys_resetn         ),
