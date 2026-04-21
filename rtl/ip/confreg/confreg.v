@@ -382,7 +382,7 @@ always @(*) begin
     intr_level_d[2] = confreg_int_pol[2] ? touch_btn_data[2] : ~touch_btn_data[2];
     intr_level_d[3] = confreg_int_pol[3] ? touch_btn_data[3] : ~touch_btn_data[3];
     intr_level_d[4] = confreg_int_pol[4] ? timer_int         : ~timer_int;
-    intr_level_d[5] = confreg_int_pol[5] ? dma_finish        : ~dma_finish;
+    intr_level_d[5] = 1'b0;
 end
 
 always @(*) begin
@@ -391,7 +391,7 @@ always @(*) begin
     intr_src_d[2] = confreg_int_pol[2] ? ( touch_btn_data[2] & ~intr_level_q[2]) : (~touch_btn_data[2] &  intr_level_q[2]);
     intr_src_d[3] = confreg_int_pol[3] ? ( touch_btn_data[3] & ~intr_level_q[3]) : (~touch_btn_data[3] &  intr_level_q[3]);
     intr_src_d[4] = confreg_int_pol[4] ? ( timer_int         & ~intr_level_q[4]) : (~timer_int         &  intr_level_q[4]);
-    intr_src_d[5] = confreg_int_pol[5] ? ( dma_finish        & ~intr_level_q[5]) : (~dma_finish        &  intr_level_q[5]);
+    intr_src_d[5] = 1'b0;
 end
 
 always @(posedge aclk) begin

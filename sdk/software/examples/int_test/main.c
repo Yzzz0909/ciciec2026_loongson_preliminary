@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 	RegWrite(0xbf20f000, 0x1f); // en
 	if (simu_flag)
 	{
-		RegWrite(0xbf20f104, 500); // timercmp 0.1ms(former:5000)
+		RegWrite(0xbf20f104, 5000); // timercmp 0.1ms
 	}
 	else
 	{

@@ -74,7 +74,7 @@ wire  [31:0]  ext_ram_data;
 
 localparam integer BTN_START_DELAY = 800000;
 localparam integer BTN_GAP_DELAY   = 100000;
-localparam integer BTN_PULSE_WIDTH = 50;
+localparam integer BTN_PULSE_WIDTH = 1000;
 
 //产生时钟与复位信号
 initial begin
@@ -91,21 +91,16 @@ initial begin
     touch_btn = 4'h0;
     dip_sw    = 32'h0000_abcd;
 
-    // 提前按键激励，避免仿真长时间等待到毫秒级才看到按钮中断
+    // Pinball 仿真按键序列：直接确认使用默认较小 delay_time，再做一次左右挡板控制
     #BTN_START_DELAY;
 
     #BTN_GAP_DELAY
-    touch_btn = 4'b0001;
-    #BTN_PULSE_WIDTH
-    touch_btn = 4'b0000;
-
-    #BTN_GAP_DELAY
-    touch_btn = 4'b0010;
-    #BTN_PULSE_WIDTH
-    touch_btn = 4'b0000;
-
-    #BTN_GAP_DELAY
     touch_btn = 4'b0100;
+    #BTN_PULSE_WIDTH
+    touch_btn = 4'b0000;
+
+    #BTN_GAP_DELAY
+    touch_btn = 4'b0001;
     #BTN_PULSE_WIDTH
     touch_btn = 4'b0000;
 

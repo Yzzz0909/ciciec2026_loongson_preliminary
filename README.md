@@ -23,6 +23,13 @@
 
 整体目标是围绕一个 LoongArch32R SoC 进行设计、仿真和上板验证。
 
+当前项目状态可以先概括为：
+
+- 阶段一 `hello_world` 已完成仿真验证
+- 阶段二 `int_test` 已完成 timer / button 中断验证
+- `pinball_game` 已在 FPGA 板上完成实际运行验证
+- 当前工程已经不只是“仿真能跑”，而是已经具备板级可运行结果
+
 顶层文件是 [rtl/soc_top.v](rtl/soc_top.v)，它对外暴露了：
 
 - 时钟与复位
@@ -258,6 +265,19 @@ Run Simulation -> Run Behavioral Simulation
 这一条链路把 `sdk/` 和 `sim/` 很自然地串起来了。
 
 ## 7. 当前工程里值得注意的点
+
+### 7.1 当前阶段性结论
+
+目前可以把项目完成度总结为：
+
+- `CPU + Axi_CDC + AxiCrossbar + RAM + UART` 主线已经跑通
+- `confreg` 已接入并完成基本中断控制功能
+- `cpu_intrpt` 已接入真实中断输入
+- `axi_dvi` 已接入 SoC，并已支撑显示相关程序运行
+- `int_test` 已完成按键和定时器中断验证
+- `pinball_game` 已在板上完整运行
+
+这意味着当前工作的重点已经从“把功能做出来”切换到“整理提交材料与保留稳定版本”。
 
 ### 7.1 这是模板，不是完整成品
 

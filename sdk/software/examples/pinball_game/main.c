@@ -15,6 +15,8 @@ unsigned long CONFREG_TIMER_BASE = 0xbf20f100;			//CONFREG计数器的虚地址
 unsigned long CONFREG_CLOCKS_PER_SEC = 50000000L;		//CONFREG时钟频率
 unsigned long CORE_CLOCKS_PER_SEC = 33000000L;			//处理器核时钟频率
 
+#define SIM_TIMER_CMP 5000
+#define BOARD_TIMER_CMP 25000000
 
 int Ball_x = 400;
 int Ball_y = 100;
@@ -47,13 +49,22 @@ volatile int flag = 1;
 
 void InterruptInit(void)
 {
+    int simu_flag;
     // Enable button and timer Interrupt
 	RegWrite(0xbf20f004,0x0f);//edge
 	RegWrite(0xbf20f008,0x1f);//pol
 	RegWrite(0xbf20f00c,0x1f);//clr
 	RegWrite(0xbf20f000,0x1f);//en
 
-	RegWrite(0xbf20f104,25000000);//timercmp 500ms
+    simu_flag = RegRead(0xbf20f500);
+    if (simu_flag)
+    {
+	    RegWrite(0xbf20f104,SIM_TIMER_CMP);//fast timer for simulation
+    }
+    else
+    {
+	    RegWrite(0xbf20f104,BOARD_TIMER_CMP);//timercmp 500ms on board
+    }
 	RegWrite(0xbf20f108,0x1);//timeren
 }
 
