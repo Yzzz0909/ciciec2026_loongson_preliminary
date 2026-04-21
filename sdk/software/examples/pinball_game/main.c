@@ -134,16 +134,17 @@ void HWI0_IntrHandler(void)
 	unsigned int int_state;
 	int_state = RegRead(0xbf20f014);
 
+	if(int_state & 0xf){
+		Button_IntrHandler(int_state & 0xf);
+	}
 	if((int_state & 0x10) == 0x10){
 		Timer_IntrHandler();
-	}
-	else if(int_state & 0xf){
-		Button_IntrHandler(int_state & 0xf);
 	}
 }
 
 void Timer_IntrHandler(void)
 {
+	RegWrite(0xbf20f00c,0x10);//clr timer int
 	if (!chooseFlag)
     {
         // refreshing the DVI output
