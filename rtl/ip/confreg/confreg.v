@@ -101,11 +101,6 @@ reg  [31:0] simu_flag;
 
 reg  [31:0] confreg_int_en,confreg_int_edge,confreg_int_pol,confreg_int_clr,confreg_int_set;
 wire [31:0] confreg_int_state;
-reg  [31:0] confreg_int_state_r;
-reg  [5:0]  intr_src_d;
-reg  [5:0]  intr_src_q;
-reg  [5:0]  intr_level_d;
-reg  [5:0]  intr_level_q;
 
 reg [31:0] sys_timer,sys_timer_cmp;
 reg sys_timer_en;
@@ -376,60 +371,19 @@ end
 //---------------------------{simulation flag}end------------------------//
 
 //-------------------------------{int_ctrl}begin----------------------------//
-always @(*) begin
-    intr_level_d[0] = confreg_int_pol[0] ? touch_btn_data[0] : ~touch_btn_data[0];
-    intr_level_d[1] = confreg_int_pol[1] ? touch_btn_data[1] : ~touch_btn_data[1];
-    intr_level_d[2] = confreg_int_pol[2] ? touch_btn_data[2] : ~touch_btn_data[2];
-    intr_level_d[3] = confreg_int_pol[3] ? touch_btn_data[3] : ~touch_btn_data[3];
-    intr_level_d[4] = confreg_int_pol[4] ? timer_int         : ~timer_int;
-    intr_level_d[5] = 1'b0;
-end
-
-always @(*) begin
-    intr_src_d[0] = confreg_int_pol[0] ? ( touch_btn_data[0] & ~intr_level_q[0]) : (~touch_btn_data[0] &  intr_level_q[0]);
-    intr_src_d[1] = confreg_int_pol[1] ? ( touch_btn_data[1] & ~intr_level_q[1]) : (~touch_btn_data[1] &  intr_level_q[1]);
-    intr_src_d[2] = confreg_int_pol[2] ? ( touch_btn_data[2] & ~intr_level_q[2]) : (~touch_btn_data[2] &  intr_level_q[2]);
-    intr_src_d[3] = confreg_int_pol[3] ? ( touch_btn_data[3] & ~intr_level_q[3]) : (~touch_btn_data[3] &  intr_level_q[3]);
-    intr_src_d[4] = confreg_int_pol[4] ? ( timer_int         & ~intr_level_q[4]) : (~timer_int         &  intr_level_q[4]);
-    intr_src_d[5] = 1'b0;
-end
-
-always @(posedge aclk) begin
-    if(!aresetn) begin
-        intr_level_q <= 6'h0;
-        intr_src_q   <= 6'h0;
-    end
-    else begin
-        intr_level_q <= intr_level_d;
-        intr_src_q   <= intr_src_d;
-    end
-end
-
-always @(posedge aclk) begin
-    if(!aresetn) begin
-        confreg_int_state_r <= 32'h0;
-    end
-    else begin
-        confreg_int_state_r[5:0] <= confreg_int_state_r[5:0] & ~confreg_int_clr[5:0];
-        confreg_int_state_r[5:0] <= confreg_int_state_r[5:0] | confreg_int_set[5:0];
-
-        if(confreg_int_edge[0]) confreg_int_state_r[0] <= (confreg_int_state_r[0] & ~confreg_int_clr[0]) | confreg_int_set[0] | intr_src_q[0];
-        else                    confreg_int_state_r[0] <= intr_level_d[0];
-        if(confreg_int_edge[1]) confreg_int_state_r[1] <= (confreg_int_state_r[1] & ~confreg_int_clr[1]) | confreg_int_set[1] | intr_src_q[1];
-        else                    confreg_int_state_r[1] <= intr_level_d[1];
-        if(confreg_int_edge[2]) confreg_int_state_r[2] <= (confreg_int_state_r[2] & ~confreg_int_clr[2]) | confreg_int_set[2] | intr_src_q[2];
-        else                    confreg_int_state_r[2] <= intr_level_d[2];
-        if(confreg_int_edge[3]) confreg_int_state_r[3] <= (confreg_int_state_r[3] & ~confreg_int_clr[3]) | confreg_int_set[3] | intr_src_q[3];
-        else                    confreg_int_state_r[3] <= intr_level_d[3];
-        if(confreg_int_edge[4]) confreg_int_state_r[4] <= (confreg_int_state_r[4] & ~confreg_int_clr[4]) | confreg_int_set[4] | intr_src_q[4];
-        else                    confreg_int_state_r[4] <= intr_level_d[4];
-        if(confreg_int_edge[5]) confreg_int_state_r[5] <= (confreg_int_state_r[5] & ~confreg_int_clr[5]) | confreg_int_set[5] | intr_src_q[5];
-        else                    confreg_int_state_r[5] <= intr_level_d[5];
-    end
-end
-
-assign confreg_int_state = confreg_int_state_r;
-assign confreg_int = |(confreg_int_state_r[5:0] & confreg_int_en[5:0]);
+int_ctrl u_int_ctrl (
+    .clk                     ( aclk               ),
+    .resetn                  ( aresetn            ),
+    .touch_btn               ( touch_btn_data     ),
+    .timer_int               ( timer_int          ),
+    .int_en                  ( confreg_int_en     ),
+    .int_edge                ( confreg_int_edge   ),
+    .int_pol                 ( confreg_int_pol    ),
+    .int_clr                 ( confreg_int_clr    ),
+    .int_set                 ( confreg_int_set    ),
+    .int_state               ( confreg_int_state  ),
+    .int_req                 ( confreg_int        )
+);
 //--------------------------------{int_ctrl}end-----------------------------//
 
 endmodule
